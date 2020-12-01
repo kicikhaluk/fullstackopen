@@ -5,9 +5,9 @@ const Persons = ({ persons }) => {
   return (
     <>
       {persons.map(person => <Person
-        key={person.name}
+        key={person.id}
         name={person.name}
-        phone={person.phone}
+        phone={person.number}
       />
       )}
     </>

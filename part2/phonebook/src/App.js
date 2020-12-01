@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SearchInput from './components/SearchInput';
 import Form from './components/Form';
 import Persons from './components/Persons';
@@ -11,11 +11,26 @@ const App = () => {
   const [searchByName, setSearchByName] = useState('');
   const [filteredBook, setFilteredBook] = useState([]);
 
+  const fetchPersons = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/persons');
+      const data = await response.json();
+      setPersons(data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+
+  useEffect(() => {
+    fetchPersons();
+  }, []);
+
   const addContactHandler = (e) => {
     e.preventDefault();
     const isAlreadyExists = persons.some(person => person.name.toLowerCase() === newName.toLowerCase());
     if (!isAlreadyExists) {
-      setPersons(persons.concat({ name: newName, phone: phoneNum }));
+      setPersons(persons.concat({ id: persons.length + 1, name: newName, number: phoneNum }));
       setPhoneNum('');
       setNewName('');
     } else {
@@ -24,6 +39,7 @@ const App = () => {
       setNewName('');
     }
   };
+
 
   const newNameInputHandler = (e) => {
     setNewName(e.target.value);
