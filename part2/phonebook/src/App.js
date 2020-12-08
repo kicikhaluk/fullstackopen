@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import phonebooks from './services';
 import SearchInput from './components/SearchInput';
 import Form from './components/Form';
 import Persons from './components/Persons';
@@ -11,32 +12,47 @@ const App = () => {
   const [searchByName, setSearchByName] = useState('');
   const [filteredBook, setFilteredBook] = useState([]);
 
-  const fetchPersons = async () => {
-    try {
-      const response = await fetch('http://localhost:5000/persons');
-      const data = await response.json();
-      setPersons(data);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-
   useEffect(() => {
-    fetchPersons();
+    phonebooks
+      .getPersons()
+      .then(data => setPersons(data))
+      .catch(err => console.log(err));
   }, []);
 
   const addContactHandler = (e) => {
     e.preventDefault();
-    const isAlreadyExists = persons.some(person => person.name.toLowerCase() === newName.toLowerCase());
-    if (!isAlreadyExists) {
-      setPersons(persons.concat({ id: persons.length + 1, name: newName, number: phoneNum }));
-      setPhoneNum('');
-      setNewName('');
+    const person = persons.find(person => person.name.toLowerCase() === newName.toLowerCase());
+    if (!person) {
+      phonebooks
+        .addPerson({ id: persons.length + 1, name: newName, number: phoneNum })
+        .then(data => {
+          setPersons(persons.concat(data));
+          setPhoneNum('');
+          setNewName('');
+        })
+        .catch(err => console.log(err));
     } else {
-      alert(`${newName} is already Exist`);
-      setPhoneNum('');
-      setNewName('');
+      const index = persons.findIndex(p => p.id === person.id);
+      if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
+        phonebooks
+          .updatePerson({ ...person, number: phoneNum })
+          .then(data => {
+            const updatedPersons = [...persons];
+            updatedPersons[index] = data
+            setPersons(updatedPersons);
+          });
+        setPhoneNum('');
+        setNewName('');
+      };
+    }
+  };
+
+  const deletePersonHandler = (personId, name) => {
+    if (window.confirm(`Delete ${name}`)) {
+      phonebooks.deletePerson(personId)
+        .then(res => phonebooks.getPersons())
+        .then(data => setPersons(data))
+        .catch(err => console.log(err));
     }
   };
 
@@ -55,10 +71,10 @@ const App = () => {
     setFilteredBook(filteredPhoneBook);
   };
 
-  let personList = <Persons persons={persons} />;
+  let personList = <Persons persons={persons} deletePersonHandler={deletePersonHandler} />;
 
   if (filteredBook.length > 0) {
-    personList = <Persons persons={filteredBook} />;
+    personList = <Persons persons={filteredBook} deletePersonHandler={deletePersonHandler} />;
   }
 
   return (

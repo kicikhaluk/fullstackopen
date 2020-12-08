@@ -18,7 +18,8 @@ const Form = ({ submitHandler, nameValue, nameInputHandler, phoneValue, phoneInp
         <Input
           type='tel'
           value={phoneValue}
-          changeHandler={phoneInputHandler} required
+          changeHandler={phoneInputHandler}
+          required
         />
       </div>
       <div>
