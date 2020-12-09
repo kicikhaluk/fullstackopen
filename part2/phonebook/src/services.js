@@ -27,20 +27,17 @@ const createPerson = async (postBody) => {
 };
 
 const updatePerson = async (postBody) => {
-  console.log(postBody);
-  try {
-    const response = await fetch(url + `/${postBody.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(postBody)
-    });
-    const data = response.json();
-    return data;
-  } catch (err) {
-    console.log(err);
+  const response = await fetch(url + `/${postBody.id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(postBody)
+  });
+  if (response.status === 404) {
+    throw new Error('Not found');
   }
+  return await response.json();
 };
 
 const deletePerson = async (personId) => {
